@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text to Image</title>
+</head>
+<body>
+    <div>
+        <textarea id="textInput" rows="20" cols="50" placeholder="Enter your text here"></textarea>
+        <br>
+        <label for="fontSizeInput">Font Size:</label>
+        <input type="number" id="fontSizeInput" value="60">
+        <br><br>
+        <label for="fontColorInput">Font Color (Hex):</label>
+        <input type="text" id="fontColorInput" value="#e4026f">
+        <br><br>
+        <label for="strokeColorInput">Stroke Color (Hex):</label>
+        <input type="text" id="strokeColorInput" value="">
+        <br><br>
+        <label for="backgroundColorInput">Background Color (Hex):</label>
+        <input type="text" id="backgroundColorInput" value="">
+        <br><br>
+        <label for="strokeSizeInput">Stroke Size:</label>
+        <input type="number" id="strokeSizeInput" value="1">
+        <br><br>
+        <label for="fileNameInput">File Name:</label>
+        <input type="text" id="fileNameInput" placeholder="Enter file name">
+        <br><br>
+        <button id="downloadpng" onclick="convertTextToImage()">Download Image</button>
+    </div>
+    <canvas id="myCanvas"></canvas>
+
+    <script>
+        function convertTextToImage() {
+            var text = document.getElementById("textInput").value;
+            var fontSize = document.getElementById("fontSizeInput").value;
+            var fontColor = document.getElementById("fontColorInput").value;
+            var strokeColor = document.getElementById("strokeColorInput").value;
+            var backgroundColor = document.getElementById("backgroundColorInput").value;
+            var strokeSize = document.getElementById("strokeSizeInput").value;
+            var fileName = document.getElementById("fileNameInput").value || "text_image";
+
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+            var lineHeight = parseInt(fontSize, 18) * 1.1; // Adjust line height as needed
+            ctx.font = fontSize + "px Arial";
+            ctx.textBaseline = "top";
+
+            var lines = text.split("\n");
+
+            var lineHeights = [];
+            var maxLineWidth = 0;
+
+            lines.forEach(function(line) {
+                var lineWidth = ctx.measureText(line).width;
+                if (lineWidth > maxLineWidth) {
+                    maxLineWidth = lineWidth;
+                }
+                lineHeights.push(lineHeight);
+            });
+
+            canvas.width = maxLineWidth + 10; // Add extra padding of 20 pixels
+            canvas.height = lineHeight * lines.length - 70;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (var i = 0; i < lines.length; i++) {
+                var lineY = lineHeight * i;
+                if (backgroundColor !== "") {
+                    ctx.fillStyle = backgroundColor;
+                    ctx.fillRect(0, lineY, maxLineWidth + 20, lineHeight);
+                }
+                ctx.fillStyle = fontColor;
+                ctx.strokeStyle = strokeColor;
+                ctx.font = fontSize + "px Arial";
+                ctx.lineWidth = strokeSize;
+                var lineX = (canvas.width - ctx.measureText(lines[i]).width) / 2;
+                ctx.fillText(lines[i], lineX, lineY);
+                ctx.strokeText(lines[i], lineX, lineY);
+            }
+
+            var image = canvas.toDataURL("image/png");
+
+            var imgElement = document.createElement("img");
+            imgElement.src = image;
+            document.body.appendChild(imgElement);
+
+            var downloadLink = document.createElement("a");
+            downloadLink.href = image;
+            downloadLink.download = fileName + ".png";
+            downloadLink.click();
+        }
+    </script>
+</body>
+</html>
